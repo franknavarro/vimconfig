@@ -30,7 +30,7 @@ if empty(glob('~/.vim/autoload/plug.vim'))
 endif
 
 " All my vim plugins
-call plug#begin('./my_plugins')
+call plug#begin('~/.vim/my_plugins')
 
 " Theme to replace the crap theme vim has
 Plug 'drewtempelmeyer/palenight.vim'
