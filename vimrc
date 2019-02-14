@@ -85,6 +85,7 @@ endif
 " Also switch on highlighting the last used search pattern.
 if &t_Co > 2 || has("gui_running")
   syntax on
+  set t_Co=256
   set background=dark
   colorscheme palenight
   set hlsearch
