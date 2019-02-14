@@ -56,6 +56,12 @@ Plug 'mattn/emmet-vim'
 " Add a tree file view in vim
 Plug 'scrooloose/nerdtree'
 
+" Dependency for SyntaxRange
+Plug 'inkarkat/vim-ingo-library'
+
+" Add support for changing highlighting between tags
+Plug 'inkarkat/vim-SyntaxRange'
+
 " End of the vim plugins
 call plug#end()
 " **********************************************************************
@@ -63,6 +69,7 @@ call plug#end()
 " **********************************************************************
 
 " Set syntax highlight for isl and def files
+filetype plugin on 
 au BufRead,BufNewFile *.Isl set filetype=xml | call SyntaxRange#Include('<js>','</js>','javascript')
 au BufRead,BufNewFile *.def set filetype=xml
 
@@ -108,3 +115,75 @@ set colorcolumn=120
 
 " Set vimdiff to ignore white space
 set diffopt+=iwhite
+
+" Open vimrc from anywhere in vim
+map <leader>vimrc :tabe ~/.vim/vimrc<Enter>
+" Re-compile vimrc when it is saved
+" autocmd BufWritePost vimrc source ~/.vim/vimrc
+
+
+function! PathJS()
+  return expand("%:p:r").".js"
+:endfunction
+
+function! OpenJS()
+  execute "vsplit ".PathJS()
+:endfunction
+
+function! FindTagsJS()
+  " Find the first set of js tags
+  execute "normal! gg/<js>\<Enter>"
+:endfunction
+
+function! ExportJS()
+  call FindTagsJS()
+  " Make sure the js tags aren't folded and if they are unfold them
+  let currlinenum = line(".")
+  echo currlinenum
+  echo foldclosed(currlinenum)
+  if foldclosed(currlinenum) > 0
+    execute "normal! za"
+  endif
+  " Select all the text between the first JS tags
+  execute "normal! vit"
+  " Get the path of the current file
+  let filename = PathJS() 
+  echom "filename: ".filename
+  " Check if the file is already open in the buffer
+  let buffername = bufname(filename)
+  echom "bufname: ".buffername
+  execute "'<,'>w! ".filename
+  execute "normal! ddd"
+  let windownum = bufwinnr(filename)
+  echom "winownum: ".windownum
+  " File is not already opened
+  if windownum < 0 
+    " Copy all the text to a new file
+    call OpenJS()
+    execute "normal! ggdd"
+    execute "%<"
+    execute "wq"
+    echom "Added File"
+  else
+    " File already opened
+  endif
+:endfunction
+
+function! ImportJS()
+  " Append the lines of js to line 2 in the file
+  let jslines = ["<js>"] + readfile(PathJS()) + ["</js>"]
+  call append(1, jslines)
+  " Fix indenting in JS
+  call FindTagsJS()
+  execute "normal! vit><<"
+  " Fold the JS lines
+  execute "normal! zfat"
+:endfunction
+
+
+
+
+
+
+
+
