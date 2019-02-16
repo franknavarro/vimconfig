@@ -102,6 +102,12 @@ if &t_Co > 2 || has("gui_running")
   set hlsearch
 endif
 
+if &term =~ '256color'
+  " Disable Background Color Erase (BCE) so that color schemes
+  " work properly when Vim is used inside tmux and GNU screens
+  set t_ut=
+endif
+
 
 " enable auto indenting
 set autoindent
