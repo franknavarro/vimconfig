@@ -34,6 +34,11 @@ call plug#begin('~/.vim/my_plugins')
 
 " Theme to replace the crap theme vim has
 Plug 'drewtempelmeyer/palenight.vim'
+Plug 'joshdick/onedark.vim'
+Plug 'morhetz/gruvbox'
+Plug 'crusoexia/vim-monokai'
+" Added support for onedark
+Plug 'sheerun/vim-polyglot'
 
 " Fuzzy Finder for vim
 Plug 'junegunn/fzf.vim'
@@ -92,9 +97,8 @@ endif
 " Also switch on highlighting the last used search pattern.
 if &t_Co > 2 || has("gui_running")
   syntax on
-  set t_Co=256
+  colorscheme onedark
   set background=dark
-  colorscheme palenight
   set hlsearch
 endif
 
