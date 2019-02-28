@@ -90,7 +90,7 @@ set noshowmode
 
 " In many terminal emulators the mouse works just fine, thus enable it.
 if has('mouse')
-  set mouse=a
+  " set mouse=a
 endif
 
 " Switch syntax highlighting on, when the terminal has colors
@@ -124,20 +124,27 @@ set softtabstop=0
 set colorcolumn=120
 
 " Set vimdiff to ignore white space
-set diffopt+=iwhite
+" set diffopt+=iwhite
 
 " Open vimrc from anywhere in vim
 map <leader>vimrc :tabe ~/.vim/vimrc<Enter>
 " Re-compile vimrc when it is saved
 " autocmd BufWritePost vimrc source ~/.vim/vimrc
 
+" if &diff == 'nodiff'
+" set shellcmdflag=-ic
+" endif
 
 function! PathJS()
-  return expand("%:p:r").".js"
+  return expand("%:p:r")."_structure_data.js"
 :endfunction
 
 function! OpenJS()
   execute "vsplit ".PathJS()
+:endfunction
+
+function! CreateJS()
+  system("touch ".PathJS())
 :endfunction
 
 function! FindTagsJS()
@@ -149,8 +156,7 @@ function! ExportJS()
   call FindTagsJS()
   " Make sure the js tags aren't folded and if they are unfold them
   let currlinenum = line(".")
-  echo currlinenum
-  echo foldclosed(currlinenum)
+  
   if foldclosed(currlinenum) > 0
     execute "normal! za"
   endif
@@ -158,14 +164,14 @@ function! ExportJS()
   execute "normal! vit"
   " Get the path of the current file
   let filename = PathJS() 
-  echom "filename: ".filename
+  
   " Check if the file is already open in the buffer
   let buffername = bufname(filename)
-  echom "bufname: ".buffername
+  
   execute "'<,'>w! ".filename
   execute "normal! ddd"
   let windownum = bufwinnr(filename)
-  echom "winownum: ".windownum
+  
   " File is not already opened
   if windownum < 0 
     " Copy all the text to a new file
@@ -173,16 +179,16 @@ function! ExportJS()
     execute "normal! ggdd"
     execute "%<"
     execute "wq"
-    echom "Added File"
   else
     " File already opened
   endif
 :endfunction
 
-function! ImportJS()
+function! ImportJS(...)
+  let a:lineNum = get(a:, 1, 1)
   " Append the lines of js to line 2 in the file
   let jslines = ["<js>"] + readfile(PathJS()) + ["</js>"]
-  call append(1, jslines)
+  call append(a:lineNum, jslines)
   " Fix indenting in JS
   call FindTagsJS()
   execute "normal! vit><<"
