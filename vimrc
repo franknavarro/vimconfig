@@ -67,6 +67,9 @@ Plug 'inkarkat/vim-ingo-library'
 " Add support for changing highlighting between tags
 Plug 'inkarkat/vim-SyntaxRange'
 
+" Emoji Support in vim!!!
+Plug 'junegunn/vim-emoji'
+
 " End of the vim plugins
 call plug#end()
 " **********************************************************************
@@ -93,14 +96,22 @@ if has('mouse')
   " set mouse=a
 endif
 
+if (&term == "pcterm" || &term == "win32")
+  set term=xterm t_Co=256
+  let &t_AB="\e[48;5;%dm"
+  let &t_AF="\e[38;5;%dm"
+  set termencoding=utf8
+endif
+                                                        
 " Switch syntax highlighting on, when the terminal has colors
 " Also switch on highlighting the last used search pattern.
 if &t_Co > 2 || has("gui_running")
   syntax on
-  colorscheme onedark
+  colorscheme palenight
   set background=dark
   set hlsearch
 endif
+
 
 if &term =~ '256color'
   " Disable Background Color Erase (BCE) so that color schemes
@@ -135,16 +146,31 @@ map <leader>vimrc :tabe ~/.vim/vimrc<Enter>
 " set shellcmdflag=-ic
 " endif
 
+
+" Emoji auto-complete/search functionality i.e. 😃 
+set completefunc=emoji#complete
+
+
+let g:fileJSEnd = "_structure_data"
+function! GetItemPath()
+  return substitute(expand("%:p:r"),"\\([A-Za-z]\\+\\d\\{3\\}\\)\.\\+\$", "\\1", "")
+:endfunction
 function! PathJS()
-  return expand("%:p:r")."_structure_data.js"
+  return GetItemPath().g:fileJSEnd.".js"
+:endfunction
+function! PathIsl()
+  return GetItemPath().".Isl"
 :endfunction
 
 function! OpenJS()
   execute "vsplit ".PathJS()
 :endfunction
+function! OpenIsl()
+  execute "vsplit ".PathIsl()
+:endfunction
 
 function! CreateJS()
-  system("touch ".PathJS())
+  call system("touch ".PathJS())
 :endfunction
 
 function! FindTagsJS()
@@ -153,39 +179,66 @@ function! FindTagsJS()
 :endfunction
 
 function! ExportJS()
+  " Open the Isl file if we are not currently on it
+  let inIslFile = 1
+  if PathIsl() != expand("%:p")
+    call OpenIsl()
+    let inIslFile = 0
+  endif
+  " Go to the first set of JS tags
   call FindTagsJS()
-  " Make sure the js tags aren't folded and if they are unfold them
+  " Make sure the js tags are folded in order to delete them easily 
   let currlinenum = line(".")
-  
-  if foldclosed(currlinenum) > 0
-    execute "normal! za"
+  if foldclosed(currlinenum) < 0
+    execute "normal! zfat"
   endif
-  " Select all the text between the first JS tags
-  execute "normal! vit"
-  " Get the path of the current file
-  let filename = PathJS() 
-  
-  " Check if the file is already open in the buffer
-  let buffername = bufname(filename)
-  
-  execute "'<,'>w! ".filename
-  execute "normal! ddd"
-  let windownum = bufwinnr(filename)
-  
-  " File is not already opened
-  if windownum < 0 
-    " Copy all the text to a new file
-    call OpenJS()
-    execute "normal! ggdd"
-    execute "%<"
-    execute "wq"
-  else
-    " File already opened
+  " Add all the text between the JS Tag to the current buffer
+  execute "normal! Y"
+  " Quit the Isl file if we weren't previously in it
+  if inIslFile == 0
+    execute "q"
   endif
+
+  " Open the JS file in a new split view
+  call OpenJS()
+  " Go to the top of the file and then delete all lines of the file
+  " and don't add the deleted lines to the register
+  execute "normal! gg\"_dG"
+  " Paste and remove extra space up top, extra tag up top and extra
+  " tag at the bottom
+  execute "normal! pggd2dGdd"
+  " Indent entire file down one
+  execute "%<"
+  " Write and quit the open split
+  execute "wq"
+
 :endfunction
 
 function! ImportJS(...)
-  let a:lineNum = get(a:, 1, 1)
+  " Open the Isl file if we are not currently on it
+  let inIslFile = 1
+  if PathIsl() != expand("%:p")
+    call OpenIsl()
+    let inIslFile = 0
+  endif
+  " Find the first set of js tags and store its line number
+  call FindTagsJS()
+  let jsLine = line(".")
+  " If their is a js tag before line 12 of the file assume there is already a
+  " JS tag with structure data in the file so delete all the old data
+  if jsLine < 12
+    " If the js tags aren't folded fold them for easier deletion
+    if foldclosed(jsLine) < 0
+      execute "normal! zfat"
+    endif
+    " Delete everything between the JS tags
+    execute "normal! dd"
+  endif
+
+  " Find the function @userfOrgaChem.loadDataFile and add a line below it
+  execute "normal! gg/@userfOrgaChem.loadDataFile\<Enter>"
+  let functionLine = line(".")
+  let a:lineNum = get(a:, 1, functionLine)
   " Append the lines of js to line 2 in the file
   let jslines = ["<js>"] + readfile(PathJS()) + ["</js>"]
   call append(a:lineNum, jslines)
@@ -194,9 +247,14 @@ function! ImportJS(...)
   execute "normal! vit><<"
   " Fold the JS lines
   execute "normal! zfat"
+  " Save the file to view changes in ZAP"
+  execute "w"
+
+  " If we weren't in the Isl file to start with then close it
+  if inIslFile == 0 
+    execute "q"
+  endif
 :endfunction
-
-
 
 
 
