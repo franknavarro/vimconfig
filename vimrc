@@ -134,6 +134,9 @@ set softtabstop=0
 " Set a line down the screen to indicate columns that are too long
 set colorcolumn=120
 
+" Set the current line to be highlighted
+set cursorline
+
 " Set vimdiff to ignore white space
 " set diffopt+=iwhite
 
