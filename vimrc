@@ -41,6 +41,7 @@ Plug 'crusoexia/vim-monokai'
 Plug 'sheerun/vim-polyglot'
 
 " Fuzzy Finder for vim
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 
 " A theme for the line at the bottom of a vim editor
@@ -137,6 +138,9 @@ set colorcolumn=120
 " Set the current line to be highlighted
 set cursorline
 
+" Line break options to auto indent on line breaks and break at words
+set linebreak
+
 " Set vimdiff to ignore white space
 " set diffopt+=iwhite
 
@@ -152,6 +156,10 @@ map <leader>vimrc :tabe ~/.vim/vimrc<Enter>
 
 " Emoji auto-complete/search functionality i.e. 😃 
 set completefunc=emoji#complete
+
+" Open up userf files
+command! Userf :tabedit ~/aleks_zap/current/aleks/src/IslUserf/src/userf.def
+command! UserfChem :tabedit ~/aleks_zap/current/aleks/src/IslUserf/src/userfChemistry.def
 
 
 let g:fileJSEnd = "_structure_data"
@@ -224,19 +232,6 @@ function! ImportJS(...)
     call OpenIsl()
     let inIslFile = 0
   endif
-  " Find the first set of js tags and store its line number
-  call FindTagsJS()
-  let jsLine = line(".")
-  " If their is a js tag before line 12 of the file assume there is already a
-  " JS tag with structure data in the file so delete all the old data
-  if jsLine < 12
-    " If the js tags aren't folded fold them for easier deletion
-    if foldclosed(jsLine) < 0
-      execute "normal! zfat"
-    endif
-    " Delete everything between the JS tags
-    execute "normal! dd"
-  endif
 
   " Find the function @userfOrgaChem.loadDataFile and add a line below it
   execute "normal! gg/@userfOrgaChem.loadDataFile\<Enter>"
@@ -259,8 +254,26 @@ function! ImportJS(...)
   endif
 :endfunction
 
+command! ImportJS :call ImportJS()
+command! ExportJS :call ExportJS()
+command! CreateJS :call CreateJS()
 
+" Search for CSS colors with a few rules for Isl:
+"   Make sure hex colors aren't preceded with an '&' because those are most
+"   likely html entities
+"   Make sure color names don't start with '@userf.' nor '@' because those are color
+"   variables
+"   Make sure color names don't start with 'name=' because that is a variable
+"   declaration
+command! SearchColor :%s/\c\v%(\&)@<!#([A-Fa-f0-9]{3}){1,2}|<((\@(userf.)?|name\=)@<!(AliceBlue|AntiqueWhite|Aqua(marine)?|Azure|Beige|Bisque|BlanchedAlmond|Blue|BlueViolet|Brown|BurlyWood|CadetBlue|Chartreuse|Chocolate|Coral|CornflowerBlue|Cornsilk|Crimson|Cyan|DarkBlue|DarkCyan|DarkGoldenRod|DarkGray|DarkGrey|DarkGreen|DarkKhaki|DarkMagenta|DarkOliveGreen|DarkOrange|DarkOrchid|DarkRed|DarkSalmon|DarkSeaGreen|DarkSlateBlue|DarkSlateGray|DarkSlateGrey|DarkTurquoise|DarkViolet|DeepPink|DeepSkyBlue|DimGray|DimGrey|DodgerBlue|FireBrick|FloralWhite|ForestGreen|Fuchsia|Gainsboro|GhostWhite|Gold(enRod)?|Gray|Grey|Green|GreenYellow|HoneyDew|HotPink|IndianRed|Indigo|Ivory|Khaki|Lavender(Blush)?|LawnGreen|LemonChiffon|LightBlue|LightCoral|LightCyan|LightGoldenRodYellow|LightGray|LightGrey|LightGreen|LightPink|LightSalmon|LightSeaGreen|LightSkyBlue|LightSlateGray|LightSlateGrey|LightSteelBlue|LightYellow|Lime|LimeGreen|Linen|Magenta|Maroon|MediumAquaMarine|MediumBlue|MediumOrchid|MediumPurple|MediumSeaGreen|MediumSlateBlue|MediumSpringGreen|MediumTurquoise|MediumVioletRed|MidnightBlue|MintCream|MistyRose|Moccasin|NavajoWhite|Navy|OldLace|Olive(Drab)?|Orange|OrangeRed|Orchid|PaleGoldenRod|PaleGreen|PaleTurquoise|PaleVioletRed|PapayaWhip|PeachPuff|Peru|Pink|Plum|PowderBlue|Purple|RebeccaPurple|Red|RosyBrown|RoyalBlue|SaddleBrown|Salmon|SandyBrown|SeaGreen|SeaShell|Sienna|Silver|SkyBlue|SlateBlue|SlateGray|SlateGrey|Snow|SpringGreen|SteelBlue|Tan|Teal|Thistle|Tomato|Turquoise|Violet|Wheat|WhiteSmoke|YellowGreen|Yellow))>//gn
 
-
-
-
+function! ReplaceColor(searchColor,replaceColor)
+  if a:searchColor =~ "\#"
+    execute "%s/\\c\\v(\\&)@<!".a:searchColor."/".a:replaceColor."/g"
+    echom "Hex"
+  else
+    execute "%s/\\c\\v(\\@(userf.)?|name\\=)@<!<".a:searchColor.">/".a:replaceColor."/g"
+    echom "Color"
+  endif
+:endfunction
+command! -nargs=+ ReplaceColor :call ReplaceColor(<f-args>)
