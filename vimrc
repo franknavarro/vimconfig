@@ -32,17 +32,24 @@ endif
 " All my vim plugins
 call plug#begin('~/.vim/my_plugins')
 
-" Theme to replace the crap theme vim has
+" Themes to replace the default vim theme
 Plug 'drewtempelmeyer/palenight.vim'
+Plug 'chriskempson/base16-vim'
 Plug 'joshdick/onedark.vim'
 Plug 'morhetz/gruvbox'
 Plug 'crusoexia/vim-monokai'
 " Added support for onedark
 Plug 'sheerun/vim-polyglot'
 
+" Auto complete support in vim
+Plug 'Valloric/YouCompleteMe'
+
 " Fuzzy Finder for vim
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
+
+" Prettier
+Plug 'prettier/vim-prettier', { 'do': 'npm install' }
 
 " A theme for the line at the bottom of a vim editor
 Plug 'itchyny/lightline.vim'
@@ -70,6 +77,9 @@ Plug 'inkarkat/vim-SyntaxRange'
 
 " Emoji Support in vim!!!
 Plug 'junegunn/vim-emoji'
+
+" ALE for ESLint support in vim
+Plug 'dense-analysis/ale'
 
 " End of the vim plugins
 call plug#end()
@@ -109,7 +119,7 @@ endif
 if &t_Co > 2 || has("gui_running")
   syntax on
   colorscheme palenight
-  set background=dark
+  " set background=dark
   set hlsearch
 endif
 
@@ -144,14 +154,6 @@ set linebreak
 " Set vimdiff to ignore white space
 " set diffopt+=iwhite
 
-" Open vimrc from anywhere in vim
-map <leader>vimrc :tabe ~/.vim/vimrc<Enter>
-" Re-compile vimrc when it is saved
-" autocmd BufWritePost vimrc source ~/.vim/vimrc
-
-" if &diff == 'nodiff'
-" set shellcmdflag=-ic
-" endif
 
 
 " Emoji auto-complete/search functionality i.e. 😃 
@@ -160,6 +162,35 @@ set completefunc=emoji#complete
 " Open up userf files
 command! Userf :tabedit ~/aleks_zap/current/aleks/src/IslUserf/src/userf.def
 command! UserfChem :tabedit ~/aleks_zap/current/aleks/src/IslUserf/src/userfChemistry.def
+
+
+" Run Prettier on save
+let g:prettier#autoformat = 0
+autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.graphql,*.md,*.vue,*.yaml,*.html Prettier
+
+" Highlight closing and ending jsx tags differently
+let g:vim_jsx_pretty_highlight_close_tag = 1
+" Allow jsx in all js files
+let g:jsx_ext_required = 0
+
+" Use prettier and eslint for ale fixing files
+let b:ale_fixers = {'javascript': ['prettier', 'eslint']}
+" Fix JS files automatically on save
+let g:ale_fix_on_save = 1
+" Use nice emojis for ale
+let g:ale_sign_error = '❌'
+let g:ale_sign_warning = '⚠️'
+" Bindings for movement with ale errors
+nmap <silent> [c <Plug>(ale_previous_wrap)
+nmap <silent> ]c <Plug>(ale_next_wrap)
+
+
+
+
+
+
+
+
 
 
 let g:fileJSEnd = "_structure_data"
