@@ -52,7 +52,9 @@ Plug 'junegunn/fzf.vim'
 Plug 'prettier/vim-prettier', { 'do': 'npm install' }
 
 " A theme for the line at the bottom of a vim editor
-Plug 'itchyny/lightline.vim'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+
 
 " Multiple cursor editing in vim
 Plug 'terryma/vim-multiple-cursors'
@@ -98,9 +100,12 @@ set number
 " allow backspacing over everything in insert mode
 set backspace=indent,eol,start
 
-" Configurations for lightline
-set laststatus=2
-set noshowmode
+
+" Configurations for airline
+let g:airline_powerline_fonts = 1
+let g:airline_theme='murmur'
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#formatter = 'unique_tail'
 
 " In many terminal emulators the mouse works just fine, thus enable it.
 if has('mouse')
@@ -129,6 +134,7 @@ if &term =~ '256color'
   " work properly when Vim is used inside tmux and GNU screens
   set t_ut=
 endif
+
 
 
 " enable auto indenting
