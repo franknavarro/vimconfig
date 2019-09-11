@@ -165,10 +165,10 @@ set linebreak
 " Emoji auto-complete/search functionality i.e. 😃 
 set completefunc=emoji#complete
 
-" Open up userf files
-command! Userf :tabedit ~/aleks_zap/current/aleks/src/IslUserf/src/userf.def
-command! UserfChem :tabedit ~/aleks_zap/current/aleks/src/IslUserf/src/userfChemistry.def
 
+" Open NERDTree with no files specified
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
 
 " Run Prettier on save
 let g:prettier#autoformat = 0
@@ -197,7 +197,11 @@ nmap <silent> ]c <Plug>(ale_next_wrap)
 
 
 
+" Work related stuff
 
+" Open up userf files
+command! Userf :tabedit ~/aleks_zap/current/aleks/src/IslUserf/src/userf.def
+command! UserfChem :tabedit ~/aleks_zap/current/aleks/src/IslUserf/src/userfChemistry.def
 
 let g:fileJSEnd = "_structure_data"
 function! GetItemPath()
